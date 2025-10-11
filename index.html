@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Working Day Estimator (MY, PH, SG)</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background: #1e1e1e;
+      padding: 20px 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      max-width: 850px;
+      width: 100%;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00bcd4;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #00bcd4;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover {
+      background: #0097a7;
+    }
+    .country {
+      margin-top: 30px;
+      border-top: 2px solid #333;
+      padding-top: 25px;
+    }
+    .country h3 {
+      color: #00bcd4;
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 15px;
+      border-left: 4px solid #00bcd4;
+      padding-left: 10px;
+    }
+    .result {
+      margin-top: 15px;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .highlight {
+      font-size: 17px;
+      font-weight: bold;
+      color: #ffd166;
+    }
+    .macro-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    .macro-box {
+      background: #222;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      position: relative;
+      border: 1px solid #333;
+    }
+    .macro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .macro-title {
+      font-weight: 700;
+      font-family: inherit;
+      color: #ffd166;
+    }
+    .copy-btn {
+      background: #00bcd4;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 8px;
+      color: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .copy-btn:hover {
+      background: #0097a7;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+      .macro-box {
+        font-size: 13px;
+      }
+      .country h3 {
+        font-size: 18px;
+      }
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: #333;
+      color: #eee;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: bold;
+    }
+    .tab-btn:hover {
+      background: #00bcd4;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Shipping Estimation 2025 (MY 🇲🇾 | PH 🇵🇭 | SG 🇸🇬)</h2>
+
+    <label for="shipDate">Shipped Date: Kalo 5DD Langsung input tanggal paid</label>
+    <input type="date" id="shipDate">
+
+    <button onclick="calculate()">Calculate</button>
+    <div class="tabs" id="tabs"></div>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const holidays = {
+        MY: [
+            '2025-01-01','2025-01-14','2025-01-27','2025-01-29','2025-01-30',
+            '2025-02-01','2025-02-11',
+            '2025-03-02','2025-03-04','2025-03-18','2025-03-23','2025-03-24','2025-03-31',
+            '2025-04-01','2025-04-02','2025-04-18','2025-04-26','2025-04-27',
+            '2025-05-01','2025-05-12','2025-05-17','2025-05-22','2025-05-30','2025-05-31',
+            '2025-06-01','2025-06-02','2025-06-03','2025-06-07','2025-06-09','2025-06-27',
+            '2025-07-07','2025-07-12','2025-07-22','2025-07-30','2025-07-31',
+            '2025-08-24','2025-08-25','2025-08-31','2025-09-01','2025-09-05','2025-09-16',
+            '2025-09-29','2025-09-30','2025-10-04','2025-10-11','2025-10-20',
+            '2025-11-07',
+            '2025-12-11','2025-12-24','2025-12-25'
+        ],
+        PH: [
+            '2025-01-01','2025-01-29','2025-03-31',
+            '2025-04-09','2025-04-17','2025-04-18','2025-04-19',
+            '2025-05-01',
+            '2025-06-06','2025-06-12',
+            '2025-08-21','2025-08-25',
+            '2025-10-31',
+            '2025-11-01','2025-11-30',
+            '2025-12-08','2025-12-24','2025-12-25','2025-12-30','2025-12-31'
+        ],
+        SG: [
+            '2025-01-01','2025-01-29','2025-01-30',
+            '2025-03-31','2025-04-18',
+            '2025-05-01','2025-05-12',
+            '2025-06-07',
+            '2025-08-09',
+            '2025-10-20',
+            '2025-12-25'
+        ]
+    };
+
+    const countryNames = {
+      MY: "Malaysia 🇲🇾",
+      PH: "Philippines 🇵🇭",
+      SG: "Singapore 🇸🇬"
+    };
+
+    function isWeekend(date) {
+      const day = date.getDay();
+      return day === 0 || day === 6;
+    }
+
+    function isHoliday(date, countryCode) {
+      const formatted = date.toISOString().split('T')[0];
+      return holidays[countryCode].includes(formatted);
+    }
+
+    function addWorkingDays(startDate, days, countryCode) {
+      let date = new Date(startDate);
+      let added = 0;
+      while (added < days) {
+        date.setDate(date.getDate() + 1);
+        if (!isWeekend(date) && !isHoliday(date, countryCode)) added++;
+      }
+      return date;
+    }
+
+    function countWorkingDaysBetween(start, end, countryCode) {
+      let current = new Date(start);
+      let count = 0;
+      while (current < end) {
+        current.setDate(current.getDate() + 1);
+        if (!isWeekend(current) && !isHoliday(current, countryCode)) count++;
+      }
+      return count;
+    }
+
+    function copyToClipboard(boxId) {
+      const box = document.getElementById(boxId);
+      if (!box) return;
+      const textEl = box.querySelector('.macro-text');
+      const text = textEl ? textEl.innerText : box.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(`[data-id="${boxId}"]`);
+        if (btn) {
+          const prev = btn.innerText;
+          btn.innerText = "Copied!";
+          setTimeout(() => btn.innerText = prev, 1500);
+        }
+      });
+    }
+
+    function calculate() {
+      const shipDateInput = document.getElementById('shipDate').value;
+      const resultsDiv = document.getElementById('results');
+      const tabsDiv = document.getElementById('tabs');
+
+      if (!shipDateInput) {
+        resultsDiv.textContent = 'Please select the shipped date.';
+        return;
+      }
+
+      const shippedDate = new Date(shipDateInput);
+      const today = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      let output = "";
+      tabsDiv.innerHTML = "";
+
+      for (const code of Object.keys(holidays)) {
+        const est5 = addWorkingDays(shippedDate, 5, code);
+        const est10 = addWorkingDays(shippedDate, 10, code);
+        const rem5 = Math.max(0, countWorkingDaysBetween(today, est5, code));
+        const rem10 = Math.max(0, countWorkingDaysBetween(today, est10, code));
+
+        tabsDiv.innerHTML += `<button class="tab-btn" onclick="document.getElementById('${code}').scrollIntoView({behavior:'smooth'})">${countryNames[code]}</button>`;
+
+        // untuk PH, hapus bagian 5 hari kerja
+        let section5 = "";
+        if (code !== "PH") {
+          section5 = `
+            <div class="highlight">5 Working Days Estimate:</div>
+            Estimated Arrival: <strong>${est5.toLocaleDateString('en-MY', options)}</strong><br>
+            Remaining Working Days: <strong>${rem5}</strong>
+            <div class="macro-container">
+              <div class="macro-box" id="${code}-3pl-5">
+                <div class="macro-header">
+                  <div class="macro-title">3PL Macro</div>
+                  <button class="copy-btn" data-id="${code}-3pl-5" onclick="copyToClipboard('${code}-3pl-5')">Copy</button>
+                </div>
+                <div class="macro-text">For your order, it is currently in transit to the sorting center. Please wait for the shipping process with an estimated ${rem5} working days and it will arrive by ${est5.toLocaleDateString('en-MY', options)} at the latest. For the next stage, the package will arrive at our sorting center.</div>
+              </div>
+
+              <div class="macro-box" id="${code}-overseas-5">
+                <div class="macro-header">
+                  <div class="macro-title">Overseas Macro</div>
+                  <button class="copy-btn" data-id="${code}-overseas-5" onclick="copyToClipboard('${code}-overseas-5')">Copy</button>
+                </div>
+                <div class="macro-text">For your order, it is currently being sorted and will be heading to your country. Please wait for the shipping process with an estimated ${rem5} working days and it will arrive by ${est5.toLocaleDateString('en-MY', options)} at the latest. The package will be shipped to your country for the next phase.</div>
+              </div>
+            </div><br>
+          `;
+        }
+
+        output += `
+          <div class="country" id="${code}">
+            <h3>${countryNames[code]}</h3>
+            <div class="result">
+              ${section5}
+              <div class="highlight">10 Working Days Estimate:</div>
+              Estimated Arrival: <strong>${est10.toLocaleDateString('en-MY', options)}</strong><br>
+              Remaining Working Days: <strong>${rem10}</strong>
+              <div class="macro-container">
+                <div class="macro-box" id="${code}-3pl-10">
+                  <div class="macro-header">
+                    <div class="macro-title">3PL Macro</div>
+                    <button class="copy-btn" data-id="${code}-3pl-10" onclick="copyToClipboard('${code}-3pl-10')">Copy</button>
+                  </div>
+                  <div class="macro-text">For your order, it is currently in transit to the sorting center. Please wait for the shipping process with an estimated ${rem10} working days and it will arrive by ${est10.toLocaleDateString('en-MY', options)} at the latest. For the next stage, the package will arrive at our sorting center.</div>
+                </div>
+
+                <div class="macro-box" id="${code}-overseas-10">
+                  <div class="macro-header">
+                    <div class="macro-title">Overseas Macro</div>
+                    <button class="copy-btn" data-id="${code}-overseas-10" onclick="copyToClipboard('${code}-overseas-10')">Copy</button>
+                  </div>
+                  <div class="macro-text">For your order, it is currently being sorted and will be heading to your country. Please wait for the shipping process with an estimated ${rem10} working days and it will arrive by ${est10.toLocaleDateString('en-MY', options)} at the latest. The package will be shipped to your country for the next phase.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      resultsDiv.innerHTML = output;
+    }
+  </script>
+</body>
+</html>
