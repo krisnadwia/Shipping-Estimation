@@ -4,7 +4,7 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shipping Estimation SID (MY | PH | SG)</title>
+  <title>Shipping Estimation SID</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
   <style>
     body {
@@ -33,24 +33,34 @@
     }
     label {
       display: block;
-      margin-top: 10px;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #ccc;
     }
-    input {
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      margin-top: 5px;
-    }
-    button {
-      margin-top: 20px;
+    input, select {
       width: 100%;
       padding: 10px;
+      border: 1px solid #333;
+      background-color: #2a2a2a;
+      color: #fff;
+      border-radius: 5px;
+      margin-top: 5px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
       border: none;
       border-radius: 5px;
       background: #00bcd4;
       color: #fff;
       font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
       transition: 0.2s;
     }
@@ -59,19 +69,14 @@
     }
     .results-row {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
+      justify-content: center;
       margin-top: 25px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
     }
     .country {
       background: #222;
       border-radius: 10px;
-      padding: 15px;
-      flex: 1;
-      min-width: 350px;
+      padding: 20px;
+      width: 100%;
       border: 1px solid #333;
     }
     .country h3 {
@@ -82,7 +87,6 @@
       letter-spacing: 0.5px;
       margin-bottom: 15px;
     }
-    /* Style tambahan agar bendera punya jarak */
     .fi {
       margin-left: 8px;
       border-radius: 2px;
@@ -95,17 +99,18 @@
       font-size: 18px;
       font-weight: bold;
       color: #ffd166;
-      margin-top: 15px;
+      margin-top: 10px;
+      margin-bottom: 5px;
     }
     .macro-container {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-top: 8px;
+      gap: 15px;
+      margin-top: 20px;
     }
     .macro-box {
       background: #1a1a1a;
-      padding: 10px;
+      padding: 15px;
       border-radius: 6px;
       font-family: monospace;
       white-space: pre-wrap;
@@ -116,17 +121,22 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 8px;
     }
     .macro-title {
       font-weight: 700;
       color: #ffd166;
+      font-family: Arial, sans-serif;
     }
     .copy-btn {
+      margin-top: 0;
+      width: auto;
       background: #00bcd4;
       border: none;
       border-radius: 5px;
-      padding: 5px 8px;
+      padding: 5px 12px;
       color: #fff;
       font-size: 12px;
       cursor: pointer;
@@ -135,51 +145,93 @@
     .copy-btn:hover {
       background: #0097a7;
     }
-    @media (max-width: 1000px) {
-      .results-row {
-        flex-wrap: wrap;
-      }
-      .country {
-        min-width: 100%;
-      }
+    .error-msg {
+      color: #ff4d4d;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .info-msg {
+      background: rgba(255, 209, 102, 0.1);
+      color: #ffd166;
+      padding: 10px 15px;
+      border-left: 4px solid #ffd166;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Shipping Estimation SID (MY | PH | SG)</h2>
+    <h2>Shipping Estimation SID</h2>
 
-    <label for="shipDate">Shipped Date/Pickup Done: (If 5DD, input paid date directly)</label>
-    <input type="date" id="shipDate">
+    <label for="countrySelect">1. Select Country:</label>
+    <select id="countrySelect" onchange="updateMethods()">
+      <option value="" disabled selected>-- Choose Country --</option>
+      <option value="MY">Malaysia</option>
+      <option value="PH">Philippines</option>
+      <option value="SG">Singapore</option>
+    </select>
 
-    <button onclick="calculate()">Calculate</button>
+    <label for="methodSelect">2. Select Shipping Method:</label>
+    <select id="methodSelect" onchange="updateUI()">
+      <option value="" disabled selected>-- Choose Shipping Method --</option>
+    </select>
+
+    <label id="dateLabel" for="shipDate">3. Shipped Date/Pickup Done:</label>
+    <input type="date" id="shipDate" onchange="updateUI()">
+
+    <div id="timeContainer" style="display: none;">
+      <label for="orderTime">4. Paid Order Time:</label>
+      <select id="orderTime">
+        <option value="before">Before 2:00 PM</option>
+        <option value="after">After 2:00 PM</option>
+      </select>
+    </div>
+
+    <div id="holidayInfo" class="info-msg" style="display: none;"></div>
+
+    <button onclick="calculate()">Calculate Estimation</button>
 
     <div id="results" class="results-row"></div>
   </div>
 
   <script>
+    // Data Libur
     const holidays = {
-      MY: [
-        '2025-10-04', '2025-10-11', '2025-10-20', '2025-11-07', '2025-12-11', '2025-12-24', '2025-12-25', '2026-01-01', '2026-01-14', '2026-01-16', '2026-02-01', '2026-02-02', '2026-02-17', '2026-02-18', '2026-03-20', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-06-01', '2026-06-17', '2026-08-25', '2026-08-31', '2026-09-16', '2026-11-08', '2026-12-25'
-      ],
-      PH: [
-        '2025-12-08', '2025-12-24', '2025-12-25', '2025-12-30', '2025-12-31', '2026-01-01', '2026-02-17', '2026-03-20', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-09', '2026-05-01', '2026-05-27', '2026-08-21', '2026-08-31', '2026-11-01', '2026-11-02', '2026-11-30', '2026-12-08', '2026-12-24', '2026-12-25', '2026-12-30', '2026-12-31'
-      ],
-      SG: [
-        '2025-10-20', '2025-12-25', '2026-01-01', '2026-02-17', '2026-02-18', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-05-31', '2026-06-01', '2026-08-09', '2026-08-10', '2026-11-08', '2026-11-09', '2026-12-25'
-      ]
+      MY: ['2025-10-04', '2025-10-11', '2025-10-20', '2025-11-07', '2025-12-11', '2025-12-24', '2025-12-25', '2026-01-01', '2026-01-14', '2026-01-16', '2026-02-01', '2026-02-02', '2026-02-17', '2026-02-18', '2026-03-20', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-06-01', '2026-06-17', '2026-08-25', '2026-08-31', '2026-09-16', '2026-11-08', '2026-12-25'],
+      PH: ['2025-12-08', '2025-12-24', '2025-12-25', '2025-12-30', '2025-12-31', '2026-01-01', '2026-02-17', '2026-03-20', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-09', '2026-05-01', '2026-05-27', '2026-08-21', '2026-08-31', '2026-11-01', '2026-11-02', '2026-11-30', '2026-12-08', '2026-12-24', '2026-12-25', '2026-12-30', '2026-12-31'],
+      SG: ['2025-10-20', '2025-12-25', '2026-01-01', '2026-02-17', '2026-02-18', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-05-31', '2026-06-01', '2026-08-09', '2026-08-10', '2026-11-08', '2026-11-09', '2026-12-25']
     };
 
-    // Update menggunakan Icon Bendera SVG
     const countryNames = {
       MY: 'Malaysia <span class="fi fi-my"></span>',
       PH: 'Philippines <span class="fi fi-ph"></span>',
       SG: 'Singapore <span class="fi fi-sg"></span>'
     };
 
+    const shippingData = {
+      MY: {
+        "Standard International": { max: 25, is5DD: false },
+        "5-Day Delivery (5DD)": { max: 6, is5DD: true }
+      },
+      PH: {
+        "Standard International": { max: 18, is5DD: false },
+        "Standard Local (FBS)": { max: 12, is5DD: false }
+      },
+      SG: {
+        "Standard International": { max: 25, is5DD: false },
+        "Doorstep Delivery": { max: 10, is5DD: false },
+        "5-Day Delivery (5DD)": { max: 6, is5DD: true }
+      }
+    };
+
+    // Fungsi utilitas tanggal
     function isWeekend(date) {
       const day = date.getDay();
-      return day === 0 || day === 6;
+      return day === 0 || day === 6; 
     }
 
     function isHoliday(date, countryCode) {
@@ -188,6 +240,15 @@
       const d = String(date.getDate()).padStart(2, '0');
       const formatted = `${y}-${m}-${d}`;
       return holidays[countryCode].includes(formatted);
+    }
+
+    function getNextWorkingDay(date, countryCode) {
+      let d = new Date(date);
+      d.setDate(d.getDate() + 1); 
+      while (isWeekend(d) || isHoliday(d, countryCode)) {
+        d.setDate(d.getDate() + 1);
+      }
+      return d;
     }
 
     function addWorkingDays(startDate, days, countryCode) {
@@ -212,6 +273,63 @@
       return count;
     }
 
+    // Mengubah isi dropdown pengiriman
+    function updateMethods() {
+      const countryCode = document.getElementById('countrySelect').value;
+      const methodSelect = document.getElementById('methodSelect');
+      
+      methodSelect.innerHTML = '<option value="" disabled selected>-- Choose Shipping Method --</option>';
+
+      if (countryCode && shippingData[countryCode]) {
+        const methods = Object.keys(shippingData[countryCode]);
+        methods.forEach(method => {
+          const option = document.createElement('option');
+          option.value = method;
+          option.text = `${method} (Max ${shippingData[countryCode][method].max} days)`;
+          methodSelect.appendChild(option);
+        });
+      }
+      updateUI(); // Reset UI waktu & pesan
+    }
+
+    // Mengatur interaksi dinamis antara Tanggal, Pengiriman, dan Waktu
+    function updateUI() {
+      const countryCode = document.getElementById('countrySelect').value;
+      const method = document.getElementById('methodSelect').value;
+      const shipDateInput = document.getElementById('shipDate').value;
+      
+      const timeContainer = document.getElementById('timeContainer');
+      const holidayInfo = document.getElementById('holidayInfo');
+      const dateLabel = document.getElementById('dateLabel');
+
+      // Sembunyikan secara default setiap ada perubahan
+      timeContainer.style.display = 'none';
+      holidayInfo.style.display = 'none';
+
+      if (!countryCode || !method) return;
+
+      const is5DD = shippingData[countryCode][method].is5DD;
+      
+      if (is5DD) {
+         dateLabel.innerText = "3. Paid Date (Input exact Paid Date):";
+         
+         if (shipDateInput) {
+            const d = new Date(shipDateInput);
+            d.setHours(0, 0, 0, 0);
+            
+            // Cek apakah tanggal yang dipilih adalah libur/akhir pekan
+            if (isWeekend(d) || isHoliday(d, countryCode)) {
+               holidayInfo.innerHTML = "<strong>Notice:</strong> The selected date is a Non-Working Day (Weekend / Public Holiday). The D0 packaging estimation will automatically start on the next working day.";
+               holidayInfo.style.display = 'block';
+            } else {
+               timeContainer.style.display = 'block';
+            }
+         }
+      } else {
+         dateLabel.innerText = "3. Shipped Date/Pickup Done:";
+      }
+    }
+
     function copyToClipboard(boxId) {
       const box = document.getElementById(boxId);
       if (!box) return;
@@ -228,68 +346,72 @@
     }
 
     function calculate() {
+      const countryCode = document.getElementById('countrySelect').value;
+      const method = document.getElementById('methodSelect').value;
       const shipDateInput = document.getElementById('shipDate').value;
       const resultsDiv = document.getElementById('results');
 
-      if (!shipDateInput) {
-        resultsDiv.textContent = 'Please select the shipped date.';
+      if (!countryCode || !method || !shipDateInput) {
+        resultsDiv.innerHTML = '<div class="error-msg">Please complete all selections to calculate.</div>';
         return;
       }
 
-      const shippedDate = new Date(shipDateInput);
-      shippedDate.setHours(0, 0, 0, 0);
+      const methodData = shippingData[countryCode][method];
+      const maxDays = methodData.max;
+      const is5DD = methodData.is5DD;
+
+      const inputDate = new Date(shipDateInput);
+      inputDate.setHours(0, 0, 0, 0);
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      let output = "";
+      let estDate;
 
-      for (const code of Object.keys(holidays)) {
-        const est5 = addWorkingDays(shippedDate, 5, code);
-        const est10 = addWorkingDays(shippedDate, 10, code);
-        const est25 = addWorkingDays(shippedDate, 25, code);
+      // Logika Perhitungan Baru Berdasarkan UI Dinamis
+      if (is5DD) {
+         let D0 = new Date(inputDate);
+         const isActuallyHoliday = isWeekend(D0) || isHoliday(D0, countryCode);
 
-        const rem5 = Math.max(0, countWorkingDaysBetween(today, est5, code));
-        const rem10 = Math.max(0, countWorkingDaysBetween(today, est10, code));
-        const rem25 = Math.max(0, countWorkingDaysBetween(today, est25, code));
-
-        let section5 = "";
-        if (code !== "PH") {
-          section5 = `
-            <div class="highlight">5 Working Days Estimate:</div>
-            Estimated Arrival: <strong>${est5.toLocaleDateString('en-MY', options)}</strong><br>
-            Remaining Working Days: <strong>${rem5}</strong>
-            ${macroTemplate(code, est5, rem5, "5")}
-          `;
-        }
-
-        output += `
-          <div class="country" id="${code}">
-            <h3>${countryNames[code]}</h3>
-            <div class="result">
-              ${section5}
-              <div class="highlight">10 Working Days Estimate:</div>
-              Estimated Arrival: <strong>${est10.toLocaleDateString('en-MY', options)}</strong><br>
-              Remaining Working Days: <strong>${rem10}</strong>
-              ${macroTemplate(code, est10, rem10, "10")}
-
-              <div class="highlight">25 Working Days Estimate:</div>
-              Estimated Arrival: <strong>${est25.toLocaleDateString('en-MY', options)}</strong><br>
-              Remaining Working Days: <strong>${rem25}</strong>
-              ${macroTemplate(code, est25, rem25, "25")}
-            </div>
-          </div>`;
+         if (isActuallyHoliday) {
+             // Jika hari libur, waktu tidak berlaku, D0 otomatis lompat ke hari kerja berikutnya
+             D0 = getNextWorkingDay(D0, countryCode);
+         } else {
+             // Jika hari kerja, kita ambil nilai dari dropdown orderTime
+             const orderTime = document.getElementById('orderTime').value;
+             if (orderTime === 'after') {
+                 D0 = getNextWorkingDay(D0, countryCode);
+             }
+         }
+         
+         estDate = addWorkingDays(D0, 5, countryCode);
+      } 
+      else {
+         estDate = addWorkingDays(inputDate, maxDays, countryCode);
       }
-      resultsDiv.innerHTML = output;
+
+      const remainingDays = Math.max(0, countWorkingDaysBetween(today, estDate, countryCode));
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+      resultsDiv.innerHTML = `
+        <div class="country" id="${countryCode}">
+          <h3>${countryNames[countryCode]}</h3>
+          <div class="result">
+            <div class="highlight">Estimation Details</div>
+            Shipping Method: <strong>${method} (Max ${maxDays} Working Days)</strong><br>
+            Estimated Arrival: <strong>${estDate.toLocaleDateString('en-MY', options)}</strong><br>
+            Remaining Working Days: <strong>${remainingDays}</strong>
+            
+            ${macroTemplate(countryCode, estDate, remainingDays, maxDays)}
+          </div>
+        </div>`;
     }
 
-    function macroTemplate(code, estDate, remaining, label) {
+    function macroTemplate(code, estDate, remaining, maxDays) {
       const dateText = estDate.toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      
-      // Bersihkan nama negara dari tag HTML agar teks makro tetap rapi
       const country = countryNames[code].replace(/<[^>]*>/g, '').trim();
-      
+      const label = maxDays;
+
       return `
       <div class="macro-container">
         <div class="macro-box" id="${code}-indo-${label}">
@@ -313,7 +435,7 @@
             <div class="macro-title">3PL Overseas</div>
             <button class="copy-btn" data-id="${code}-overseas-${label}" onclick="copyToClipboard('${code}-overseas-${label}')">Copy</button>
           </div>
-          <div class="macro-text">Your order has arrived in ${country} and (last tracking jasa kirim). You can check the details by using the tracking number () with the link (). Kindly wait maximum on ${dateText} but don’t worry it can be faster because after we check your parcel it's already picked up by the local courier at the latest. For the next stage, the package will arrive at our sorting center.</div>
+          <div class="macro-text">Your order has arrived in ${country} and (last tracking tracking event). You can check the details by using the tracking number () with the link (). Kindly wait maximum on ${dateText} but don’t worry it can be faster because after we check your parcel it's already picked up by the local courier at the latest. For the next stage, the package will arrive at our sorting center.</div>
         </div>
       </div>`;
     }
