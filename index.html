@@ -201,9 +201,10 @@
   <script>
     // Data Libur
     const holidays = {
-      MY: ['2025-10-04', '2025-10-11', '2025-10-20', '2025-11-07', '2025-12-11', '2025-12-24', '2025-12-25', '2026-01-01', '2026-01-14', '2026-01-16', '2026-02-01', '2026-02-02', '2026-02-17', '2026-02-18', '2026-03-20', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-06-01', '2026-06-17', '2026-08-25', '2026-08-31', '2026-09-16', '2026-11-08', '2026-12-25'],
-      PH: ['2025-12-08', '2025-12-24', '2025-12-25', '2025-12-30', '2025-12-31', '2026-01-01', '2026-02-17', '2026-03-20', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-09', '2026-05-01', '2026-05-27', '2026-08-21', '2026-08-31', '2026-11-01', '2026-11-02', '2026-11-30', '2026-12-08', '2026-12-24', '2026-12-25', '2026-12-30', '2026-12-31'],
-      SG: ['2025-10-20', '2025-12-25', '2026-01-01', '2026-02-17', '2026-02-18', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-05-31', '2026-06-01', '2026-08-09', '2026-08-10', '2026-11-08', '2026-11-09', '2026-12-25']
+      ID: ['2025-01-01', '2025-01-27', '2025-01-29', '2025-03-29', '2025-03-31', '2025-04-01', '2025-04-18', '2025-04-20', '2025-05-01', '2025-05-12', '2025-05-29', '2025-06-01', '2025-06-06', '2025-06-27', '2025-08-17', '2025-09-05', '2025-12-25', '2025-01-28', '2025-03-28', '2026-01-01', '2026-01-16', '2026-02-17', '2026-03-19', '2026-03-21', '2026-03-22', '2026-04-03', '2026-04-05', '2026-05-01', '2026-05-14', '2026-05-27', '2026-05-31', '2026-06-01', '2026-06-16', '2026-08-17', '2026-08-25', '2026-12-25'],
+      SG: ['2025-01-01', '2025-01-29', '2025-01-30', '2025-03-31', '2025-04-18', '2025-05-01', '2025-05-12', '2025-06-07', '2025-08-09', '2025-10-20', '2025-12-25', '2026-01-01', '2026-02-17', '2026-02-18', '2026-03-21', '2026-04-03', '2026-05-01', '2026-05-27', '2026-05-31', '2026-06-01', '2026-08-09', '2026-08-10', '2026-11-08', '2026-11-09', '2026-12-25'],
+      MY: ['2025-01-01', '2025-01-14', '2025-01-27', '2025-01-29', '2025-01-30', '2025-02-01', '2025-02-11', '2025-03-02', '2025-03-04', '2025-03-18', '2025-03-23', '2025-03-24', '2025-03-31', '2025-04-01', '2025-04-02', '2025-04-18', '2025-04-26', '2025-04-27', '2025-05-01', '2025-05-12', '2025-05-17', '2025-05-22', '2025-05-30', '2025-05-31', '2025-06-01', '2025-06-02', '2025-06-03', '2025-06-07', '2025-06-09', '2025-06-27', '2025-07-07', '2025-07-12', '2025-07-22', '2025-07-30', '2025-07-31', '2025-08-24', '2025-08-25', '2025-08-31', '2025-09-01', '2025-09-05', '2025-09-16', '2025-09-29', '2025-09-30', '2025-10-04', '2025-10-11', '2025-10-20', '2025-11-07', '2025-12-11', '2025-12-24', '2025-12-25', '2026-01-01', '2026-02-17', '2026-02-18', '2026-03-21', '2026-03-22', '2026-05-01', '2026-05-27', '2026-05-31', '2026-06-01', '2026-06-17', '2026-08-25', '2026-08-31', '2026-09-16', '2026-11-08', '2026-11-09', '2026-12-25'],
+      PH: ['2025-01-01', '2025-01-29', '2025-03-31', '2025-04-19', '2025-04-09', '2025-04-17', '2025-04-18', '2025-05-01', '2025-06-06', '2025-06-12', '2025-08-21', '2025-08-25', '2025-10-31', '2025-11-01', '2025-11-30', '2025-12-08', '2025-12-24', '2025-12-25', '2025-12-30', '2025-12-31', '2026-01-01', '2026-02-17', '2026-03-20', '2026-04-02', '2026-04-03', '2026-04-04', '2026-04-09', '2026-05-01', '2026-05-27', '2026-06-12', '2026-08-21', '2026-08-31', '2026-11-01', '2026-11-02', '2026-11-30', '2026-12-24', '2026-12-25', '2026-12-30', '2026-12-31']
     };
 
     const countryNames = {
@@ -419,7 +420,13 @@
             <div class="macro-title">3PL Indonesia</div>
             <button class="copy-btn" data-id="${code}-indo-${label}" onclick="copyToClipboard('${code}-indo-${label}')">Copy</button>
           </div>
-          <div class="macro-text">For your order, it is currently in transit to the sorting center. It will arrive by ${dateText} at the latest. But don't worry, it could be faster, the earliest is on (EDD). For the next stage, the package will arrive at our sorting center.</div>
+          <div class="macro-text">For your order, it is currently in transit to the sorting center. It will arrive by ${dateText} at the latest. But don't worry, it could be faster, the earliest is on (EDD). For the next stage, the package will arrive at our sorting center.
+          
+          Please be informed that the delivery process is handled by the courier’s operations and is not directly under the seller’s control.
+          
+          Therefore, the delivery timeline may vary depending on operational conditions and queue at the sorting center.
+          
+          We hope your order will arrive at the destination address within the estimated timeframe and in good condition.</div>
         </div>
 
         <div class="macro-box" id="${code}-handover-${label}">
@@ -427,7 +434,13 @@
             <div class="macro-title">WH/SLS/Handover</div>
             <button class="copy-btn" data-id="${code}-handover-${label}" onclick="copyToClipboard('${code}-handover-${label}')">Copy</button>
           </div>
-          <div class="macro-text">For your order, it is currently being sorted and will be heading to your country. It will arrive by ${dateText} at the latest. But don't worry, it could be faster, the earliest is on (EDD). The package will be shipped to your country for the next phase.</div>
+          <div class="macro-text">For your order, it is currently being sorted and will be heading to your country. It will arrive by ${dateText} at the latest. But don't worry, it could be faster, the earliest is on (EDD). The package will be shipped to your country for the next phase.
+          
+          If the tracking status shows “Jakarta”: please note that the tracking information only indicates the last recorded location before the parcel was dispatched. The parcel is no longer in Jakarta and has already been shipped to your country.
+          
+          The order will next arrive at the destination country’s warehouse, where it will be processed for final delivery to your address.
+          
+          Please be informed that the delivery timeline may vary depending on operational conditions and shipping queues, and this process is not fully under the seller’s control. We kindly ask for your patience and hope that your order will arrive at the destination safely and in good condition.</div>
         </div>
 
         <div class="macro-box" id="${code}-overseas-${label}">
@@ -435,7 +448,11 @@
             <div class="macro-title">3PL Overseas</div>
             <button class="copy-btn" data-id="${code}-overseas-${label}" onclick="copyToClipboard('${code}-overseas-${label}')">Copy</button>
           </div>
-          <div class="macro-text">Your order has arrived in ${country} and (last tracking tracking event). You can check the details by using the tracking number () with the link (). Kindly wait maximum on ${dateText} , because after we check your parcel it's already picked up by the local courier at the latest. But don't worry, it could be faster, the earliest is on (EDD). For the next stage, the package will arrive at our sorting center.</div>
+          <div class="macro-text">Your order has arrived in ${country} and (last tracking tracking event). You can check the details by using the tracking number () with the link (). Kindly wait maximum on ${dateText} , because after we check your parcel it's already picked up by the local courier at the latest. But don't worry, it could be faster, the earliest is on (EDD). For the next stage, the package will arrive at our sorting center.
+          
+          Please be informed that the delivery timeline depends on the courier’s operational conditions and shipping queue.
+          
+          We kindly ask for your patience and hope that your order will arrive at the destination safely and in good condition.</div>
         </div>
       </div>`;
     }
